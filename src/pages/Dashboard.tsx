@@ -29,6 +29,41 @@ const hobbiesMap: Record<string, { label: string; icon: string }> = {
   photography: { label: "Photography", icon: "📸" },
   fitness: { label: "Fitness", icon: "🏋️" },
   sleeping: { label: "Sleeping", icon: "😴" },
+  drawing: { label: "Drawing", icon: "✏️" },
+  painting: { label: "Painting", icon: "🎨" },
+  writing: { label: "Writing", icon: "🖋️" },
+  singing: { label: "Singing", icon: "🎤" },
+  instruments: { label: "Playing musical instruments", icon: "🎸" },
+  dancing: { label: "Dancing", icon: "💃" },
+  podcasts: { label: "Podcast listening", icon: "🎧" },
+  meditation: { label: "Meditation", icon: "🧘" },
+  yoga: { label: "Yoga", icon: "🧘" },
+  hiking: { label: "Hiking", icon: "🥾" },
+  cycling: { label: "Cycling", icon: "🚴" },
+  running: { label: "Running", icon: "🏃" },
+  swimming: { label: "Swimming", icon: "🏊" },
+  chess: { label: "Chess", icon: "♟️" },
+  board_games: { label: "Board games", icon: "🎲" },
+  blogging: { label: "Blogging", icon: "📝" },
+  vlogging: { label: "Vlogging", icon: "📹" },
+  uiux: { label: "UI/UX designing", icon: "🖥️" },
+  game_dev: { label: "Game development", icon: "🕹️" },
+  robotics: { label: "Robotics", icon: "🤖" },
+  electronics: { label: "Electronics tinkering", icon: "🔧" },
+  "3d_modeling": { label: "3D modeling", icon: "📐" },
+  video_editing: { label: "Video editing", icon: "🎞️" },
+  animation: { label: "Animation", icon: "🎬" },
+  calligraphy: { label: "Calligraphy", icon: "✒️" },
+  origami: { label: "Origami", icon: "🦢" },
+  gardening: { label: "Gardening", icon: "🌱" },
+  cooking: { label: "Cooking (home recipes)", icon: "🍳" },
+  baking: { label: "Baking", icon: "🧁" },
+  language_learning: { label: "Language learning", icon: "🗣️" },
+  public_speaking: { label: "Public speaking", icon: "🎙️" },
+  volunteering: { label: "Volunteering", icon: "🤝" },
+  astronomy: { label: "Astronomy", icon: "🔭" },
+  stargazing: { label: "Stargazing", icon: "🌌" },
+  puzzles: { label: "Puzzle solving", icon: "🧩" },
 };
 
 const campusLabels: Record<string, string> = {
@@ -301,9 +336,16 @@ const Dashboard = () => {
 
         {isProfileComplete && (
           <div className="glass-card p-6 mb-8">
-            <h2 className="text-xl font-display font-bold mb-4">
-              Your Profile
-            </h2>
+            <div className="flex items-center justify-between mb-4 gap-3">
+              <h2 className="text-xl font-display font-bold">Your Profile</h2>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/account")}
+              >
+                <Edit className="w-4 h-4 mr-2" /> Update Profile
+              </Button>
+            </div>
             <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <p className="text-muted-foreground text-sm mb-1">Bio</p>
