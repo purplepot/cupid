@@ -215,6 +215,13 @@ const Dashboard = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/account")}
+              className="hidden sm:inline-flex"
+            >
+              <Edit className="w-4 h-4 mr-2" /> Edit Profile
+            </Button>
             {isAdmin && (
               <Button
                 variant="secondary"
@@ -280,7 +287,7 @@ const Dashboard = () => {
                 </p>
               </div>
               <Button
-                onClick={() => navigate("/register")}
+                onClick={() => navigate("/account")}
                 className="btn-primary"
               >
                 Complete Profile

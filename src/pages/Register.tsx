@@ -125,20 +125,23 @@ const Register = () => {
         throw new Error("Sign up did not complete. Please try again.");
       }
 
-      const { error: profileError } = await supabase.from("profiles").upsert({
-        user_id: authData.user.id,
-        name: formData.name,
-        gender: formData.gender as "male" | "female" | "other",
-        interested_in: formData.interestedIn as "male" | "female" | "any",
-        campus: formData.campus as
-          | "vellore"
-          | "chennai"
-          | "amaravati"
-          | "bhopal",
-        age: parseInt(formData.age),
-        bio: formData.bio,
-        hobbies: formData.hobbies,
-      });
+      const { error: profileError } = await supabase.from("profiles").upsert(
+        {
+          user_id: authData.user.id,
+          name: formData.name,
+          gender: formData.gender as "male" | "female" | "other",
+          interested_in: formData.interestedIn as "male" | "female" | "any",
+          campus: formData.campus as
+            | "vellore"
+            | "chennai"
+            | "amaravati"
+            | "bhopal",
+          age: parseInt(formData.age),
+          bio: formData.bio,
+          hobbies: formData.hobbies,
+        },
+        { onConflict: "user_id" },
+      );
 
       if (profileError) {
         throw profileError;
