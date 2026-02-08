@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap");
 
 /* VMET Valentine Design System - Pink & Black Theme */
 
@@ -48,8 +48,16 @@
     --glass-border: 0 0% 100% / 0.1;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(330 90% 60%), hsl(350 80% 55%));
-    --gradient-glow: linear-gradient(135deg, hsl(330 100% 70% / 0.3), hsl(350 80% 55% / 0.1));
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(330 90% 60%),
+      hsl(350 80% 55%)
+    );
+    --gradient-glow: linear-gradient(
+      135deg,
+      hsl(330 100% 70% / 0.3),
+      hsl(350 80% 55% / 0.1)
+    );
     --gradient-dark: linear-gradient(180deg, hsl(0 0% 6%), hsl(0 0% 2%));
     --gradient-card: linear-gradient(145deg, hsl(0 0% 10%), hsl(0 0% 6%));
 
@@ -106,11 +114,16 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: "Inter", system-ui, sans-serif;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Playfair Display', serif;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Playfair Display", serif;
   }
 }
 
@@ -129,14 +142,16 @@
 
   .btn-primary {
     @apply bg-gradient-to-r from-primary to-pink-500 text-white font-semibold 
-           px-8 py-3 rounded-full transition-all duration-300 
-           hover:shadow-[0_0_30px_hsl(330_90%_60%/0.5)] hover:scale-105;
+           px-8 py-3 rounded-full transition-all duration-200 ease-out 
+           hover:shadow-[0_10px_28px_hsl(330_90%_60%/0.35)] hover:scale-[1.02]
+           focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
   }
 
   .btn-outline {
     @apply border-2 border-primary text-primary font-semibold 
-           px-8 py-3 rounded-full transition-all duration-300
-           hover:bg-primary hover:text-white;
+           px-8 py-3 rounded-full transition-all duration-200 ease-out
+           hover:bg-primary/10 hover:border-primary/70 hover:shadow-[0_6px_20px_hsl(330_90%_60%/0.18)] hover:scale-[1.02]
+           focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
   }
 
   .floating-heart {
@@ -150,13 +165,20 @@
 
 @layer utilities {
   .text-balance {
-    text-wrap: balance;
+    text-wrap: normal;
+  }
+
+  @supports (text-wrap: balance) {
+    .text-balance {
+      text-wrap: balance;
+    }
   }
 }
 
 /* Heart Animations */
 @keyframes floatHeart {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) rotate(-5deg);
     opacity: 0.6;
   }
@@ -167,7 +189,8 @@
 }
 
 @keyframes pulseGlow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 20px hsl(330 90% 60% / 0.3);
   }
   50% {
@@ -187,7 +210,8 @@
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -196,7 +220,8 @@
 }
 
 @keyframes heartbeat {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   25% {
@@ -223,8 +248,18 @@
 }
 
 /* Staggered animations */
-.stagger-1 { animation-delay: 0.1s; }
-.stagger-2 { animation-delay: 0.2s; }
-.stagger-3 { animation-delay: 0.3s; }
-.stagger-4 { animation-delay: 0.4s; }
-.stagger-5 { animation-delay: 0.5s; }
+.stagger-1 {
+  animation-delay: 0.1s;
+}
+.stagger-2 {
+  animation-delay: 0.2s;
+}
+.stagger-3 {
+  animation-delay: 0.3s;
+}
+.stagger-4 {
+  animation-delay: 0.4s;
+}
+.stagger-5 {
+  animation-delay: 0.5s;
+}

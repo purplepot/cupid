@@ -1,7 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, User, MapPin, Calendar, LogOut, Sparkles, Edit } from "lucide-react";
+import {
+  Heart,
+  User,
+  MapPin,
+  Calendar,
+  LogOut,
+  Sparkles,
+  Edit,
+  Sparkle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import FloatingHearts from "@/components/FloatingHearts";
@@ -15,7 +25,7 @@ const hobbiesMap: Record<string, { label: string; icon: string }> = {
   sports: { label: "Sports", icon: "⚽" },
   reading: { label: "Reading", icon: "📚" },
   traveling: { label: "Traveling", icon: "✈️" },
-  food: { label: "Food", icon: "🍕" },
+  food: { label: "Food", icon: "🍜" },
   photography: { label: "Photography", icon: "📸" },
   fitness: { label: "Fitness", icon: "🏋️" },
 };
@@ -30,49 +40,144 @@ const campusLabels: Record<string, string> = {
 const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<Tables<"profiles"> | null>(null);
+  const [match, setMatch] = useState<Tables<"matches"> | null>(null);
+  const [matchPartner, setMatchPartner] = useState<Tables<"profiles"> | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate("/login");
-        return;
-      }
-      setUser(user);
+  const fetchLatestMatch = async (uid: string) => {
+    const { data: matchData, error: matchError } = await supabase
+      .from("matches")
+      .select("*")
+      .eq("user_id", uid)
+      .order("match_date", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-      // Fetch profile data
-      const { data: profileData } = await supabase
+    if (matchError) {
+      toast({
+        title: "Failed to load match",
+        description: matchError.message,
+        variant: "destructive",
+      });
+    }
+    setMatch(matchData);
+
+    if (matchData?.matched_user_id && matchData.revealed) {
+      const { data: partnerData } = await supabase
         .from("profiles")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", matchData.matched_user_id)
         .maybeSingle();
+      setMatchPartner(partnerData);
+    } else {
+      setMatchPartner(null);
+    }
+  };
 
-      setProfile(profileData);
-      setLoading(false);
+  useEffect(() => {
+    const getUser = async () => {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (error) {
+          toast({
+            title: "Auth error",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
+
+        const authed = data?.user;
+        if (!authed) {
+          setLoading(false);
+          navigate("/login");
+          return;
+        }
+        setUser(authed);
+
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", authed.id)
+          .maybeSingle();
+
+        if (profileError) {
+          toast({
+            title: "Failed to load profile",
+            description: profileError.message,
+            variant: "destructive",
+          });
+        }
+        setProfile(profileData);
+
+        await fetchLatestMatch(authed.id);
+      } catch (err: any) {
+        toast({
+          title: "Unexpected error",
+          description: err?.message || "Something went wrong",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
     };
 
     getUser();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_OUT") {
         navigate("/login");
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    return () => data.subscription?.unsubscribe();
+  }, [navigate, toast]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`matches-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "matches",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          fetchLatestMatch(user.id);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    toast({
-      title: "Logged out",
-      description: "See you soon! 💕",
-    });
+    toast({ title: "Logged out", description: "See you soon! ���" });
     navigate("/");
   };
+
+  const isProfileComplete =
+    profile?.campus &&
+    profile?.gender &&
+    profile?.hobbies &&
+    profile.hobbies.length > 0;
+
+  const sharedHobbies = useMemo(() => {
+    if (!matchPartner || !profile?.hobbies || !matchPartner.hobbies)
+      return [] as string[];
+    const setB = new Set(matchPartner.hobbies);
+    return profile.hobbies.filter((h) => setB.has(h));
+  }, [profile?.hobbies, matchPartner]);
 
   if (loading) {
     return (
@@ -82,22 +187,19 @@ const Dashboard = () => {
     );
   }
 
-  const isProfileComplete = profile?.campus && profile?.gender && profile?.hobbies && profile.hobbies.length > 0;
-
   return (
     <div className="min-h-screen bg-background relative">
       <FloatingHearts />
-      
-      {/* Background */}
       <div className="absolute inset-0 bg-gradient-dark" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(330_90%_60%/0.1),_transparent_50%)]" />
 
-      {/* Header */}
       <header className="relative z-10 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Heart className="w-8 h-8 text-primary fill-primary" />
-            <span className="text-xl font-display font-bold gradient-text">VMET</span>
+            <span className="text-xl font-display font-bold gradient-text">
+              VMET
+            </span>
           </div>
 
           <Button
@@ -112,7 +214,6 @@ const Dashboard = () => {
       </header>
 
       <main className="relative z-10 container mx-auto px-4 py-12">
-        {/* Welcome Card */}
         <div className="glass-card p-8 mb-8">
           <div className="flex flex-col md:flex-row items-center gap-6">
             <div className="w-24 h-24 rounded-full bg-gradient-primary flex items-center justify-center">
@@ -121,7 +222,8 @@ const Dashboard = () => {
 
             <div className="text-center md:text-left flex-1">
               <h1 className="text-3xl font-display font-bold mb-2">
-                Welcome, {profile?.name || user?.user_metadata?.name || "VITian"}! 💕
+                Welcome,{" "}
+                {profile?.name || user?.user_metadata?.name || "VITian"}!
               </h1>
               <p className="text-muted-foreground mb-2">{user?.email}</p>
               {profile?.campus && (
@@ -132,11 +234,9 @@ const Dashboard = () => {
               )}
             </div>
 
-            {/* Status Card */}
             <div className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-primary/10 border border-primary/20">
-              <Sparkles className="w-6 h-6 text-primary" />
               <span className="text-sm md:text-base font-medium text-primary">
-                Matching on Feb 14 💖
+                Matching on Feb 14
               </span>
             </div>
           </div>
@@ -149,36 +249,48 @@ const Dashboard = () => {
                 <Edit className="w-6 h-6 text-primary" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold mb-1">Complete Your Profile</h3>
+                <h3 className="text-lg font-semibold mb-1">
+                  Complete Your Profile
+                </h3>
                 <p className="text-muted-foreground text-sm">
                   Add your hobbies and preferences to get matched!
                 </p>
               </div>
-              <Button onClick={() => navigate("/register")} className="btn-primary">
+              <Button
+                onClick={() => navigate("/register")}
+                className="btn-primary"
+              >
                 Complete Profile
               </Button>
             </div>
           </div>
         )}
 
-        {/* Profile Details */}
         {isProfileComplete && (
           <div className="glass-card p-6 mb-8">
-            <h2 className="text-xl font-display font-bold mb-4">Your Profile</h2>
+            <h2 className="text-xl font-display font-bold mb-4">
+              Your Profile
+            </h2>
             <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <p className="text-muted-foreground text-sm mb-1">Bio</p>
-                <p className="text-foreground">{profile?.bio || "No bio added"}</p>
+                <p className="text-foreground">
+                  {profile?.bio || "No bio added"}
+                </p>
               </div>
               <div>
                 <p className="text-muted-foreground text-sm mb-1">Age</p>
-                <p className="text-foreground">{profile?.age || "Not specified"}</p>
+                <p className="text-foreground">
+                  {profile?.age || "Not specified"}
+                </p>
               </div>
             </div>
 
             {profile?.hobbies && profile.hobbies.length > 0 && (
               <div className="mt-6">
-                <p className="text-muted-foreground text-sm mb-3">Your Hobbies</p>
+                <p className="text-muted-foreground text-sm mb-3">
+                  Your Hobbies
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {profile.hobbies.map((hobby) => (
                     <span
@@ -192,10 +304,157 @@ const Dashboard = () => {
                 </div>
               </div>
             )}
+
+            {match && !match.revealed && (
+              <div className="glass-card p-6 mb-8 border-dashed border-primary/40">
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Your match is locked
+                    </p>
+                    <h2 className="text-xl font-display font-bold flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-primary" /> Reveals soon
+                    </h2>
+                    <p className="text-muted-foreground text-sm">
+                      We have a match for you. It will be revealed on the
+                      announcement date.
+                    </p>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className="text-amber-600 border-amber-200 bg-amber-50"
+                  >
+                    Locked
+                  </Badge>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4 mt-4 text-sm">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Campus</p>
+                    <p className="font-medium">
+                      {campusLabels[match.campus] || match.campus}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">
+                      Match Status
+                    </p>
+                    <p className="font-medium">Pending reveal</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {match && match.revealed && matchPartner && (
+              <div className="glass-card p-6 mb-8 border-primary/50">
+                <div className="flex items-start justify-between gap-3 mb-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Match Revealed
+                    </p>
+                    <h2 className="text-2xl font-display font-bold flex items-center gap-2">
+                      <Sparkle className="w-5 h-5 text-primary" />
+                      Congrats!
+                    </h2>
+                    <p className="text-muted-foreground text-sm">
+                      You and your match are live side-by-side.
+                    </p>
+                  </div>
+                  <Badge className="bg-primary/10 text-primary border-primary/30">
+                    Revealed
+                  </Badge>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="glass-card border border-primary/10 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        You
+                      </p>
+                      <Badge
+                        variant="outline"
+                        className="text-primary border-primary/30"
+                      >
+                        {campusLabels[match.campus] || match.campus}
+                      </Badge>
+                    </div>
+                    <h3 className="text-xl font-display font-bold">
+                      {profile?.name || "You"}
+                    </h3>
+                    {profile?.gender && (
+                      <p className="text-muted-foreground text-sm capitalize">
+                        {profile.gender}
+                      </p>
+                    )}
+                    {profile?.bio && (
+                      <p className="mt-3 text-foreground text-sm leading-relaxed">
+                        {profile.bio}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="glass-card border border-primary/10 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Your Match
+                      </p>
+                      <Badge className="bg-primary/10 text-primary border-primary/30">
+                        {campusLabels[match.campus] || match.campus}
+                      </Badge>
+                    </div>
+                    <h3 className="text-xl font-display font-bold flex items-center gap-2">
+                      <Sparkle className="w-4 h-4 text-primary" />
+                      {matchPartner.name}
+                    </h3>
+                    {matchPartner.gender && (
+                      <p className="text-muted-foreground text-sm capitalize">
+                        {matchPartner.gender}
+                      </p>
+                    )}
+                    {matchPartner.bio && (
+                      <p className="mt-3 text-foreground text-sm leading-relaxed">
+                        {matchPartner.bio}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-6 grid md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Match Score</p>
+                    <p className="font-medium">{match.match_score ?? 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">
+                      Shared Hobbies
+                    </p>
+                    <p className="font-medium">{sharedHobbies.length}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Match Date</p>
+                    <p className="font-medium">
+                      {match.match_date?.slice(0, 10)}
+                    </p>
+                  </div>
+                </div>
+
+                {sharedHobbies.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {sharedHobbies.map((hobby) => (
+                      <span
+                        key={hobby}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card border border-border text-sm"
+                      >
+                        <span>{hobbiesMap[hobby]?.icon}</span>
+                        <span>{hobbiesMap[hobby]?.label || hobby}</span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
-        {/* Info Cards Grid */}
         <div className="grid md:grid-cols-3 gap-6">
           <div className="glass-card p-6">
             <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center mb-4">
@@ -213,7 +472,7 @@ const Dashboard = () => {
               </li>
               <li className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-primary/30" />
-                Results: Feb 14 💕
+                Results: Feb 14
               </li>
             </ul>
           </div>
@@ -224,7 +483,8 @@ const Dashboard = () => {
             </div>
             <h3 className="text-lg font-semibold mb-2">Campus Matching</h3>
             <p className="text-muted-foreground text-sm">
-              You'll be matched with someone from your own campus for easier meetups!
+              You'll be matched with someone from your own campus for easier
+              meetups!
             </p>
           </div>
 

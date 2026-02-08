@@ -36,6 +36,13 @@ const campuses = [
   { value: "bhopal", label: "VIT Bhopal" },
 ];
 
+const vitEmailDomains = [
+  "vitstudent.ac.in",
+  "vit.ac.in",
+  "vitbhopal.ac.in",
+  "vitap.ac.in",
+];
+
 const Register = () => {
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
@@ -69,11 +76,25 @@ const Register = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.hobbies.length < 3) {
       toast({
         title: "Select more hobbies",
         description: "Please select at least 3 hobbies for better matching",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const email = formData.email.toLowerCase();
+    const isVitEmail = vitEmailDomains.some((domain) =>
+      email.endsWith(`@${domain}`),
+    );
+
+    if (!isVitEmail) {
+      toast({
+        title: "Use your VIT email",
+        description: "Please register with a valid VIT campus email address.",
         variant: "destructive",
       });
       return;
@@ -87,7 +108,6 @@ const Register = () => {
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: window.location.origin,
           data: {
             name: formData.name,
             gender: formData.gender,
@@ -101,22 +121,39 @@ const Register = () => {
       });
 
       if (authError) throw authError;
+      if (!authData.user) {
+        throw new Error("Sign up did not complete. Please try again.");
+      }
 
-      // Store registration data in localStorage to update profile after email verification
-      localStorage.setItem('vmet_registration_data', JSON.stringify({
-        gender: formData.gender,
-        interestedIn: formData.interestedIn,
-        campus: formData.campus,
-        age: formData.age,
+      const { error: profileError } = await supabase.from("profiles").upsert({
+        user_id: authData.user.id,
+        name: formData.name,
+        gender: formData.gender as "male" | "female" | "other",
+        interested_in: formData.interestedIn as "male" | "female" | "any",
+        campus: formData.campus as
+          | "vellore"
+          | "chennai"
+          | "amaravati"
+          | "bhopal",
+        age: parseInt(formData.age),
         bio: formData.bio,
         hobbies: formData.hobbies,
-      }));
+      });
+
+      if (profileError) {
+        throw profileError;
+      }
 
       toast({
-        title: "Registration successful! 💕",
-        description: "Please check your email to verify your account.",
+        title: "Registration successful!",
+        description: "You're ready to sign in with your VIT email.",
       });
-      navigate("/login");
+
+      if (authData.session) {
+        navigate("/dashboard");
+      } else {
+        navigate("/login");
+      }
     } catch (error: any) {
       toast({
         title: "Registration failed",
@@ -133,7 +170,12 @@ const Register = () => {
       return formData.name && formData.email && formData.password;
     }
     if (step === 2) {
-      return formData.gender && formData.interestedIn && formData.campus && formData.age;
+      return (
+        formData.gender &&
+        formData.interestedIn &&
+        formData.campus &&
+        formData.age
+      );
     }
     return true;
   };
@@ -141,7 +183,7 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-background relative flex items-center justify-center p-4 py-12">
       <FloatingHearts />
-      
+
       {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-dark" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(330_90%_60%/0.15),_transparent_50%)]" />
@@ -150,7 +192,9 @@ const Register = () => {
         {/* Logo */}
         <Link to="/" className="flex items-center justify-center gap-2 mb-8">
           <Heart className="w-10 h-10 text-primary fill-primary animate-heartbeat" />
-          <span className="text-2xl font-display font-bold gradient-text">VMET</span>
+          <span className="text-2xl font-display font-bold gradient-text">
+            VMET
+          </span>
         </Link>
 
         {/* Progress Steps */}
@@ -172,8 +216,12 @@ const Register = () => {
             {step === 1 && (
               <div className="space-y-6 animate-fade-in-up">
                 <div className="text-center mb-6">
-                  <h1 className="text-2xl font-display font-bold mb-2">Create Account</h1>
-                  <p className="text-muted-foreground">Let's start with the basics 💕</p>
+                  <h1 className="text-2xl font-display font-bold mb-2">
+                    Create Account
+                  </h1>
+                  <p className="text-muted-foreground">
+                    Let's start with the basics 💕
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -198,7 +246,7 @@ const Register = () => {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="your.email@vit.ac.in"
+                      placeholder="name@vitstudent.ac.in"
                       value={formData.email}
                       onChange={(e) => updateFormData("email", e.target.value)}
                       className="pl-10 bg-input border-border focus:border-primary"
@@ -216,7 +264,9 @@ const Register = () => {
                       type={showPassword ? "text" : "password"}
                       placeholder="Min 6 characters"
                       value={formData.password}
-                      onChange={(e) => updateFormData("password", e.target.value)}
+                      onChange={(e) =>
+                        updateFormData("password", e.target.value)
+                      }
                       className="pl-10 pr-10 bg-input border-border focus:border-primary"
                       minLength={6}
                       required
@@ -226,7 +276,11 @@ const Register = () => {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -237,8 +291,12 @@ const Register = () => {
             {step === 2 && (
               <div className="space-y-6 animate-fade-in-up">
                 <div className="text-center mb-6">
-                  <h1 className="text-2xl font-display font-bold mb-2">Tell Us About You</h1>
-                  <p className="text-muted-foreground">Help us find your perfect match 💘</p>
+                  <h1 className="text-2xl font-display font-bold mb-2">
+                    Tell Us About You
+                  </h1>
+                  <p className="text-muted-foreground">
+                    Help us find your perfect match 💘
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -263,7 +321,9 @@ const Register = () => {
                     <Label>Interested In</Label>
                     <Select
                       value={formData.interestedIn}
-                      onValueChange={(value) => updateFormData("interestedIn", value)}
+                      onValueChange={(value) =>
+                        updateFormData("interestedIn", value)
+                      }
                     >
                       <SelectTrigger className="bg-input border-border">
                         <SelectValue placeholder="Select" />
@@ -336,8 +396,12 @@ const Register = () => {
             {step === 3 && (
               <div className="space-y-6 animate-fade-in-up">
                 <div className="text-center mb-6">
-                  <h1 className="text-2xl font-display font-bold mb-2">Your Interests</h1>
-                  <p className="text-muted-foreground">Select at least 3 hobbies 🎯</p>
+                  <h1 className="text-2xl font-display font-bold mb-2">
+                    Your Interests
+                  </h1>
+                  <p className="text-muted-foreground">
+                    Select at least 3 hobbies 🎯
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -411,7 +475,10 @@ const Register = () => {
           <div className="mt-6 text-center">
             <p className="text-muted-foreground">
               Already have an account?{" "}
-              <Link to="/login" className="text-primary hover:underline font-medium">
+              <Link
+                to="/login"
+                className="text-primary hover:underline font-medium"
+              >
                 Sign in
               </Link>
             </p>

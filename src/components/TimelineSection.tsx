@@ -1,4 +1,4 @@
-import { UserPlus, Cpu, Heart } from "lucide-react";
+import { UserPlus, Calendar, Heart } from "lucide-react";
 
 const timeline = [
   {
@@ -11,7 +11,7 @@ const timeline = [
     date: "Feb 13",
     title: "Matching Day",
     description: "Our algorithm works its magic to find your perfect match.",
-    icon: Cpu,
+    icon: Calendar,
   },
   {
     date: "Feb 14",
@@ -56,7 +56,9 @@ const TimelineSection = () => {
                 {/* Content */}
                 <div
                   className={`glass-card p-6 flex-1 ml-8 md:ml-0 md:max-w-md ${
-                    index % 2 === 0 ? "md:mr-auto md:pr-20" : "md:ml-auto md:pl-20"
+                    index % 2 === 0
+                      ? "md:mr-auto md:pr-20"
+                      : "md:ml-auto md:pl-20"
                   }`}
                 >
                   <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-3">

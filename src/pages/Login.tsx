@@ -29,25 +29,32 @@ const Login = () => {
       if (error) throw error;
 
       // Check if we have pending registration data to update profile
-      const pendingData = localStorage.getItem('vmet_registration_data');
+      const pendingData = localStorage.getItem("vmet_registration_data");
       if (pendingData && data.user) {
         const profileData = JSON.parse(pendingData);
-        
+
         // Update the user's profile with registration data
         const { error: updateError } = await supabase
-          .from('profiles')
+          .from("profiles")
           .update({
-            gender: profileData.gender as 'male' | 'female' | 'other',
-            interested_in: profileData.interestedIn as 'male' | 'female' | 'any',
-            campus: profileData.campus as 'vellore' | 'chennai' | 'amaravati' | 'bhopal',
+            gender: profileData.gender as "male" | "female" | "other",
+            interested_in: profileData.interestedIn as
+              | "male"
+              | "female"
+              | "any",
+            campus: profileData.campus as
+              | "vellore"
+              | "chennai"
+              | "amaravati"
+              | "bhopal",
             age: parseInt(profileData.age),
             bio: profileData.bio,
             hobbies: profileData.hobbies,
           })
-          .eq('user_id', data.user.id);
+          .eq("user_id", data.user.id);
 
         if (!updateError) {
-          localStorage.removeItem('vmet_registration_data');
+          localStorage.removeItem("vmet_registration_data");
         }
       }
 
@@ -70,7 +77,7 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-background relative flex items-center justify-center p-4">
       <FloatingHearts />
-      
+
       {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-dark" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(330_90%_60%/0.15),_transparent_50%)]" />
@@ -79,14 +86,20 @@ const Login = () => {
         {/* Logo */}
         <Link to="/" className="flex items-center justify-center gap-2 mb-8">
           <Heart className="w-10 h-10 text-primary fill-primary animate-heartbeat" />
-          <span className="text-2xl font-display font-bold gradient-text">VMET</span>
+          <span className="text-2xl font-display font-bold gradient-text">
+            VMET
+          </span>
         </Link>
 
         {/* Login Card */}
         <div className="glass-card p-8">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-display font-bold mb-2">Welcome Back</h1>
-            <p className="text-muted-foreground">Sign in to find your match 💕</p>
+            <h1 className="text-2xl font-display font-bold mb-2">
+              Welcome Back
+            </h1>
+            <p className="text-muted-foreground">
+              Sign in to find your match 💕
+            </p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
@@ -97,7 +110,7 @@ const Login = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="your.email@vit.ac.in"
+                  placeholder="name@vitstudent.ac.in"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10 bg-input border-border focus:border-primary"
@@ -124,7 +137,11 @@ const Login = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -151,7 +168,10 @@ const Login = () => {
           <div className="mt-6 text-center">
             <p className="text-muted-foreground">
               Don't have an account?{" "}
-              <Link to="/register" className="text-primary hover:underline font-medium">
+              <Link
+                to="/register"
+                className="text-primary hover:underline font-medium"
+              >
                 Register now
               </Link>
             </p>

@@ -18,7 +18,7 @@ const HeroSection = () => {
             <div className="relative">
               {/* Glow effect behind image */}
               <div className="absolute -inset-4 bg-gradient-to-r from-primary/30 to-pink-glow/20 rounded-[3rem] blur-3xl" />
-              
+
               {/* Main image container */}
               <div className="relative rounded-[2.5rem] overflow-hidden border-2 border-white/10 shadow-2xl shadow-primary/20 max-w-md">
                 <img
@@ -26,10 +26,10 @@ const HeroSection = () => {
                   alt="Find your match"
                   className="w-full h-auto object-cover"
                 />
-                
+
                 {/* Overlay gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
-                
+
                 {/* Floating badge */}
                 <div className="absolute bottom-6 left-6 right-6">
                   <div className="glass-card p-4 flex items-center gap-3">
@@ -37,16 +37,15 @@ const HeroSection = () => {
                       <Heart className="w-6 h-6 text-white fill-white" />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Matching on</p>
-                      <p className="font-semibold text-foreground">Feb 13, 2025</p>
+                      <p className="text-sm text-muted-foreground">
+                        Matching on
+                      </p>
+                      <p className="font-semibold text-foreground">
+                        Feb 13, 2025
+                      </p>
                     </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Floating elements */}
-              <div className="absolute -top-4 -right-4 w-16 h-16 rounded-2xl bg-gradient-primary shadow-glow flex items-center justify-center animate-float">
-                <Sparkles className="w-8 h-8 text-white" />
               </div>
             </div>
           </div>
@@ -55,18 +54,19 @@ const HeroSection = () => {
           <div className="order-2 lg:order-2 text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6 animate-fade-in-up">
               <Heart className="w-4 h-4 text-primary fill-primary" />
-              <span className="text-sm text-primary font-medium">VIT Valentine's Day 2025</span>
+              <span className="text-sm text-primary font-medium">
+                VIT Valentine's Day 2026
+              </span>
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-6 animate-fade-in-up stagger-1">
-              Find Your{" "}
-              <span className="gradient-text">VMET Match</span>
+              Find Your <span className="gradient-text">VMET Match</span>
               <span className="inline-block ml-2 animate-heartbeat">💕</span>
             </h1>
 
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-lg mx-auto lg:mx-0 animate-fade-in-up stagger-2">
-              This Valentine's Day, let VMET match you with someone who shares your vibe. 
-              Connect with VITians across all campuses!
+              This Valentine's Day, let VMET match you with someone who shares
+              your vibe. Connect with VITians across all campuses!
             </p>
 
             {/* Stats */}
@@ -84,7 +84,7 @@ const HeroSection = () => {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in-up stagger-4">
               <Link to="/register">
-                <Button className="btn-primary w-full sm:w-auto text-lg px-10 py-6 rounded-full">
+                <Button className="btn-outline w-full sm:w-auto text-lg px-10 py-6 rounded-full">
                   Register Now
                   <Heart className="ml-2 w-5 h-5 fill-current" />
                 </Button>
