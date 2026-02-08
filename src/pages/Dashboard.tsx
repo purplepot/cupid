@@ -37,6 +37,17 @@ const campusLabels: Record<string, string> = {
   bhopal: "VIT Bhopal",
 };
 
+// Admin detection: allow role=admin or email present in VITE_ADMIN_EMAILS (comma-separated)
+const isAdminUser = (currentUser: any) => {
+  const email = (currentUser?.email || "").toLowerCase();
+  const role = currentUser?.app_metadata?.role;
+  const envAdmins = (import.meta.env.VITE_ADMIN_EMAILS || "")
+    .split(",")
+    .map((entry: string) => entry.trim().toLowerCase())
+    .filter(Boolean);
+  return role === "admin" || envAdmins.includes(email);
+};
+
 const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<Tables<"profiles"> | null>(null);
@@ -47,6 +58,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isAdmin = useMemo(() => isAdminUser(user), [user]);
 
   const fetchLatestMatch = async (uid: string) => {
     const { data: matchData, error: matchError } = await supabase
@@ -202,14 +214,25 @@ const Dashboard = () => {
             </span>
           </div>
 
-          <Button
-            variant="ghost"
-            onClick={handleLogout}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <LogOut className="w-5 h-5 mr-2" />
-            Logout
-          </Button>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Button
+                variant="secondary"
+                onClick={() => navigate("/admin")}
+                className="hidden sm:inline-flex"
+              >
+                Admin
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              onClick={handleLogout}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <LogOut className="w-5 h-5 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
       </header>
 
