@@ -28,6 +28,7 @@ const hobbiesMap: Record<string, { label: string; icon: string }> = {
   food: { label: "Food", icon: "🍜" },
   photography: { label: "Photography", icon: "📸" },
   fitness: { label: "Fitness", icon: "🏋️" },
+  sleeping: { label: "Sleeping", icon: "😴" },
 };
 
 const campusLabels: Record<string, string> = {
@@ -218,7 +219,8 @@ const Dashboard = () => {
             <Button
               variant="outline"
               onClick={() => navigate("/account")}
-              className="hidden sm:inline-flex"
+              className="inline-flex"
+              size="sm"
             >
               <Edit className="w-4 h-4 mr-2" /> Edit Profile
             </Button>
@@ -226,7 +228,8 @@ const Dashboard = () => {
               <Button
                 variant="secondary"
                 onClick={() => navigate("/admin")}
-                className="hidden sm:inline-flex"
+                className="inline-flex"
+                size="sm"
               >
                 Admin
               </Button>

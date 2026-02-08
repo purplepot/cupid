@@ -26,6 +26,7 @@ const hobbies = [
   { id: "food", label: "Food", icon: "🍕" },
   { id: "photography", label: "Photography", icon: "📸" },
   { id: "fitness", label: "Fitness", icon: "🏋️" },
+  { id: "sleeping", label: "Sleeping", icon: "😴" },
 ];
 
 const campuses = [
