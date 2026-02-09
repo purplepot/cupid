@@ -110,7 +110,7 @@ const Login = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="name@vitstudent.ac.in"
+                  placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10 bg-input border-border focus:border-primary"
