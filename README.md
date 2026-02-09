@@ -1,73 +1,79 @@
-# Welcome to your Lovable project
+# VMET Campus
 
-## Project info
+Match VIT students by campus and shared interests. Built with Vite, React, TypeScript, Tailwind, and Supabase (auth, storage, RLS).
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Features
 
-## How can I edit this code?
+- Student auth via Supabase; VIT-email gate for signup.
+- Profile creation and editing (bio, campus, gender, interests, hobbies).
+- Admin panel to generate and reveal matches (campus-only pairing, shared hobbies required).
+- Realtime dashboard updates on match reveal; partner profile visible when revealed.
+- Responsive UI with shadcn-ui components.
 
-There are several ways of editing your application.
+## Stack
 
-**Use Lovable**
+- Vite + React + TypeScript
+- Tailwind CSS + shadcn-ui
+- Supabase (Postgres + Auth + RLS)
+- React Router, TanStack Query
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Getting Started
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+git clone <repo>
+cd vmet
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Env vars (required)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Create `.env.local` (or `.env`) with:
 
-**Use GitHub Codespaces**
+```
+VITE_SUPABASE_URL=https://<your-project>.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=<anon-key>
+VITE_ADMIN_EMAILS=admin1@vitstudent.ac.in,admin2@vitstudent.ac.in
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Rebuild/redeploy after changing envs (Vite reads at build time).
 
-## What technologies are used for this project?
+### Supabase policies (must exist)
 
-This project is built with:
+Ensure RLS on `profiles` and `matches`, plus policies such as:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- profiles: insert/update/select where `auth.uid() = user_id`.
+- matches: user can select their rows; admin can select/insert/update.
+- partner view: allow selecting matched partner profile when a revealed match exists.
 
-## How can I deploy this project?
+### Scripts
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+- `npm run dev` – start dev server
+- `npm run build` – production build
+- `npm run preview` – preview build
+- `npm run lint` – lint
+- `npm run test` / `npm run test:watch` – unit tests
 
-## Can I connect a custom domain to my Lovable project?
+## Admin Usage
 
-Yes, you can!
+- Log in with an admin email (in `VITE_ADMIN_EMAILS`) or a user whose `app_metadata.role` is `admin`.
+- Go to `/admin` to generate matches and reveal all.
+- Dashboard shows an Admin button for admins and realtime match updates.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Matching Logic (current)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- Greedy pairing within the same campus.
+- Requires mutual interest compatibility and at least one shared hobby.
+- Each matched user gets a mirrored row; reveal flips `revealed` to true.
+
+## Deployment Notes
+
+- Set envs in your host (e.g., Vercel) and redeploy.
+- Confirm the frontend points to the correct Supabase project (URL/key).
+- If admin access fails in prod, recheck envs and ensure a fresh login for a JWT carrying `role: admin`.
+
+## Troubleshooting
+
+- Duplicate key on profiles: ensure upsert uses `onConflict: user_id` (implemented) and policies allow upsert.
+- Cannot see partner after reveal: confirm partner-view RLS policy and that the match is `revealed = true`.
+- Mobile admin button missing: ensured visible for all sizes; hard refresh after deploy.
