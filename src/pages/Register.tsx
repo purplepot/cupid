@@ -72,13 +72,6 @@ const campuses = [
   { value: "bhopal", label: "VIT Bhopal" },
 ];
 
-const vitEmailDomains = [
-  "vitstudent.ac.in",
-  "vit.ac.in",
-  "vitbhopal.ac.in",
-  "vitap.ac.in",
-];
-
 const Register = () => {
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
@@ -117,20 +110,6 @@ const Register = () => {
       toast({
         title: "Select more hobbies",
         description: "Please select at least 3 hobbies for better matching",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const email = formData.email.toLowerCase();
-    const isVitEmail = vitEmailDomains.some((domain) =>
-      email.endsWith(`@${domain}`),
-    );
-
-    if (!isVitEmail) {
-      toast({
-        title: "Use your VIT email",
-        description: "Please register with a valid VIT campus email address.",
         variant: "destructive",
       });
       return;
@@ -185,7 +164,7 @@ const Register = () => {
 
       toast({
         title: "Registration successful!",
-        description: "You're ready to sign in with your VIT email.",
+        description: "You're ready to sign in.",
       });
 
       if (authData.session) {
@@ -285,7 +264,7 @@ const Register = () => {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="name@vitstudent.ac.in"
+                      placeholder="you@example.com"
                       value={formData.email}
                       onChange={(e) => updateFormData("email", e.target.value)}
                       className="pl-10 bg-input border-border focus:border-primary"
