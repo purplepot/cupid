@@ -9,6 +9,7 @@ import {
   Sparkles,
   Edit,
   Sparkle,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -117,7 +118,7 @@ const Dashboard = () => {
     if (matchData?.matched_user_id && matchData.revealed) {
       const { data: partnerData } = await supabase
         .from("profiles")
-        .select("*")
+        .select("user_id,name,gender,bio,hobbies,campus,email")
         .eq("user_id", matchData.matched_user_id)
         .maybeSingle();
       setMatchPartner(partnerData);
@@ -485,9 +486,17 @@ const Dashboard = () => {
                         {matchPartner.gender}
                       </p>
                     )}
-                    {matchPartner.email && (
-                      <p className="text-muted-foreground text-sm">
+                    {matchPartner.email ? (
+                      <a
+                        href={`mailto:${matchPartner.email}`}
+                        className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+                      >
+                        <Mail className="w-4 h-4" />
                         {matchPartner.email}
+                      </a>
+                    ) : (
+                      <p className="text-muted-foreground text-sm">
+                        Email not provided yet.
                       </p>
                     )}
                     {matchPartner.bio && (
