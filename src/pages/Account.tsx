@@ -183,6 +183,7 @@ const Account = () => {
         age: ageNum,
         bio: formData.bio,
         hobbies: formData.hobbies,
+        email: user.email,
       },
       { onConflict: "user_id" },
     );

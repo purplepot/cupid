@@ -154,6 +154,7 @@ const Register = () => {
           age: parseInt(formData.age),
           bio: formData.bio,
           hobbies: formData.hobbies,
+          email: formData.email,
         },
         { onConflict: "user_id" },
       );

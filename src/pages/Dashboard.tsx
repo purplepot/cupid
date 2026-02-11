@@ -485,6 +485,11 @@ const Dashboard = () => {
                         {matchPartner.gender}
                       </p>
                     )}
+                    {matchPartner.email && (
+                      <p className="text-muted-foreground text-sm">
+                        {matchPartner.email}
+                      </p>
+                    )}
                     {matchPartner.bio && (
                       <p className="mt-3 text-foreground text-sm leading-relaxed">
                         {matchPartner.bio}
