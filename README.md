@@ -1,79 +1,157 @@
-# VMET Campus
+<div align="center">
 
-Match VIT students by campus and shared interests. Built with Vite, React, TypeScript, Tailwind, and Supabase (auth, storage, RLS).
+# 💝 VMET — Find Your Match
 
-## Features
+**A Valentine's Day matchmaking platform for VIT students across all campuses.**
 
-- Student auth via Supabase; VIT-email gate for signup.
-- Profile creation and editing (bio, campus, gender, interests, hobbies).
-- Admin panel to generate and reveal matches (campus-only pairing, shared hobbies required).
-- Realtime dashboard updates on match reveal; partner profile visible when revealed.
-- Responsive UI with shadcn-ui components.
+</div>
 
-## Stack
+---
 
-- Vite + React + TypeScript
-- Tailwind CSS + shadcn-ui
-- Supabase (Postgres + Auth + RLS)
-- React Router, TanStack Query
+## 📸 Screenshots
 
-## Getting Started
+|             Landing Page              |               Login               |
+| :-----------------------------------: | :-------------------------------: |
+| ![Landing Page](./public/landing.png) | ![Login Page](./public/login.png) |
 
-```sh
-git clone <repo>
-cd vmet
+---
+
+## ✨ Features
+
+- 🔐 **VIT-exclusive auth** — Only `@vitstudent.ac.in` emails can register
+- 👤 **Rich profiles** — Bio, campus, gender, interests, and hobbies
+- 💘 **Smart matching** — Campus-scoped, interest-compatible, shared-hobby matching
+- 🛠️ **Admin panel** — Generate and reveal matches at `/admin`
+- 📡 **Realtime updates** — Dashboard refreshes live when matches are revealed
+- 📱 **Fully responsive** — Works seamlessly on mobile and desktop
+- 🎨 **Sleek dark UI** — Built with shadcn/ui + Tailwind CSS
+
+---
+
+## 🚀 Tech Stack
+
+| Layer      | Technology                       |
+| ---------- | -------------------------------- |
+| Frontend   | React + TypeScript + Vite        |
+| Styling    | Tailwind CSS + shadcn/ui         |
+| Backend    | Supabase (Postgres + Auth + RLS) |
+| State      | TanStack Query + React Router    |
+| Testing    | Vitest                           |
+| Deployment | Vercel                           |
+
+---
+
+## 🏁 Getting Started
+
+### 1. Clone & Install
+
+```bash
+git clone https://github.com/purplepot/cupid.git
+cd cupid
 npm install
-npm run dev
 ```
 
-### Env vars (required)
+### 2. Set up Environment Variables
 
-Create `.env.local` (or `.env`) with:
+Create a `.env.local` file at the root:
 
-```
+```env
 VITE_SUPABASE_URL=https://<your-project>.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=<anon-key>
+VITE_SUPABASE_PUBLISHABLE_KEY=<your-anon-key>
 VITE_ADMIN_EMAILS=admin1@vitstudent.ac.in,admin2@vitstudent.ac.in
 ```
 
-Rebuild/redeploy after changing envs (Vite reads at build time).
+> ⚠️ Vite reads env vars at **build time** — redeploy after any changes.
 
-### Supabase policies (must exist)
+### 3. Configure Supabase RLS
 
-Ensure RLS on `profiles` and `matches`, plus policies such as:
+Ensure the following Row Level Security policies exist:
 
-- profiles: insert/update/select where `auth.uid() = user_id`.
-- matches: user can select their rows; admin can select/insert/update.
-- partner view: allow selecting matched partner profile when a revealed match exists.
+**`profiles` table:**
 
-### Scripts
+- Users can `INSERT` / `UPDATE` / `SELECT` where `auth.uid() = user_id`
 
-- `npm run dev` – start dev server
-- `npm run build` – production build
-- `npm run preview` – preview build
-- `npm run lint` – lint
-- `npm run test` / `npm run test:watch` – unit tests
+**`matches` table:**
 
-## Admin Usage
+- Users can `SELECT` their own rows
+- Admins can `SELECT` / `INSERT` / `UPDATE` all rows
+- Users can view their matched partner's profile when `revealed = true`
 
-- Log in with an admin email (in `VITE_ADMIN_EMAILS`) or a user whose `app_metadata.role` is `admin`.
-- Go to `/admin` to generate matches and reveal all.
-- Dashboard shows an Admin button for admins and realtime match updates.
+### 4. Run Locally
 
-## Matching Logic (current)
+```bash
+npm run dev
+```
 
-- Greedy pairing within the same campus.
-- Requires mutual interest compatibility and at least one shared hobby.
-- Each matched user gets a mirrored row; reveal flips `revealed` to true.
+---
 
-## Deployment Notes
+## 🧰 Scripts
 
-- Set envs in your host (e.g., Vercel) and redeploy.
-- Confirm the frontend points to the correct Supabase project (URL/key).
-- If admin access fails in prod, recheck envs and ensure a fresh login for a JWT carrying `role: admin`.
+| Command              | Description              |
+| -------------------- | ------------------------ |
+| `npm run dev`        | Start dev server         |
+| `npm run build`      | Production build         |
+| `npm run preview`    | Preview production build |
+| `npm run lint`       | Run ESLint               |
+| `npm run test`       | Run unit tests           |
+| `npm run test:watch` | Run tests in watch mode  |
 
-## Troubleshooting
+---
 
-- Duplicate key on profiles: ensure upsert uses `onConflict: user_id` (implemented) and policies allow upsert.
-- Cannot see partner after reveal: confirm partner-view RLS policy and that the match is `revealed = true`.
-- Mobile admin button missing: ensured visible for all sizes; hard refresh after deploy.
+## 🔑 Admin Usage
+
+1. Log in with an email listed in `VITE_ADMIN_EMAILS` (or a user with `app_metadata.role = admin`)
+2. Navigate to `/admin`
+3. Click **Generate Matches** to run the matching algorithm
+4. Click **Reveal All** to make matches visible to users
+5. Users see their match in real-time on the dashboard
+
+---
+
+## 💘 Matching Algorithm
+
+The current algorithm uses a **greedy campus-scoped pairing** strategy:
+
+1. Users are grouped by campus (VIT Vellore, Chennai, Amaravati, Bhopal)
+2. Pairs must have **compatible interests**
+3. Pairs must share **at least one hobby**
+4. Each matched user gets a mirrored match row; reveal flips `revealed → true`
+
+---
+
+## 🚢 Deployment (Vercel)
+
+1. Push to GitHub
+2. Import the repo in [Vercel](https://vercel.com)
+3. Add the three environment variables in Vercel's project settings
+4. Deploy — Vercel auto-builds on every push to `main`
+
+---
+
+## 🐛 Troubleshooting
+
+| Issue                            | Fix                                                |
+| -------------------------------- | -------------------------------------------------- |
+| Duplicate key on profiles        | Ensure upsert uses `onConflict: user_id`           |
+| Can't see partner after reveal   | Check partner-view RLS policy + `revealed = true`  |
+| Admin button missing on mobile   | Hard refresh after deploy                          |
+| Admin access fails in production | Re-check env vars and log in fresh for updated JWT |
+
+---
+
+## 🌐 Campuses
+
+VMET is available across all four VIT campuses:
+
+- 🏫 VIT Vellore
+- 🏫 VIT Chennai
+- 🏫 VIT Amaravati
+- 🏫 VIT Bhopal
+
+---
+
+<div align="center">
+
+Made with 💕 for VIT Valentine's Day 2026
+
+</div>
